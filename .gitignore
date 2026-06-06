@@ -1,0 +1,34 @@
+# OS cruft
+.DS_Store
+Thumbs.db
+
+# Editor cruft
+*.swp
+*~
+.idea/
+.vscode/
+
+# Python (for docx/build scripts)
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Node
+node_modules/
+
+# Office temp/lock files
+~$*
+
+# Your work — keep the structure, not the contents.
+# Source material and generated output stay local by default.
+# Delete these lines if you want to version your context and deliverables.
+context/*
+!context/README.md
+deliverable/*
+!deliverable/.gitkeep
+
+# Notes are the agent's working memory. Track them or not, your call.
+# Uncomment to ignore:
+# notes/*
+# !notes/README.md
