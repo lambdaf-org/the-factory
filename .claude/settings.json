@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "Read",
+      "Write",
+      "Edit",
+      "Bash(ls*)",
+      "Bash(cat*)",
+      "Bash(find*)",
+      "Bash(head*)",
+      "Bash(tail*)",
+      "Bash(wc*)",
+      "Bash(diff*)",
+      "Bash(cp*)",
+      "Bash(mkdir*)",
+      "Bash(pandoc*)",
+      "Bash(extract-text*)",
+      "Bash(python3*)",
+      "Bash(pip*)",
+      "Bash(npm*)"
+    ]
+  }
+}
