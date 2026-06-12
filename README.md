@@ -1,46 +1,48 @@
-# Factory
+# the-factory
 
-The Factory is a reusable scaffold for running Claude Code (or any capable coding agent) as an autonomous worker. You drop source material into `context/`, write what you want in `task.md`, and the agent does the work on its own. It fits any domain and any language. The agent builds and maintains its own map of the workspace, so every run picks up where the last one left off instead of starting cold.
+> A reusable scaffold for running Claude Code as an autonomous worker. Source material goes into `context/`, the job goes into `task.md`, and `./launch.sh` runs it.
 
-## The idea
+![Bash](https://img.shields.io/badge/Bash-launcher-4EAA25?logo=gnubash&logoColor=white)
 
-An autonomous agent reads a folder of context and a task, then does the work end to end. Before and during the work it aggressively maintains its own metacognitive notes in `notes/` — where everything is, how it connects, what state it's in, and where to latch on next time. Notes are priority one. No planning, no writing, no output until the workspace is mapped. A future run reads the notes first and is instantly oriented.
+the-factory is a project skeleton rather than an application. It wraps the `claude` CLI in a single launcher and a fixed folder layout so a coding agent can pick up a folder of context plus a task and work through it on its own. The defining mechanic is metacognition. Before doing anything, the agent builds and maintains its own map of the workspace in `notes/`, so a later run reads those notes first and is oriented immediately rather than starting cold.
 
-## Layout
+A run reads `hints/` for the working rules, reads everything in `context/`, reads `task.md`, plans, then writes its output to a fresh folder under `deliverable/`. Existing context is never overwritten. The structure is domain-agnostic and language-agnostic, and it follows whatever material gets dropped in.
 
-```
-context/                source material, organized however
-  topic-name/
-    subfolder-1/          could be docs, code, anything
-    subfolder-2/          varies per topic; could be 1, could be 10
-      most_recent_docs/   if present, the current working state to continue from
-hints/                  non-negotiable style and working rules (pre-populated)
-deliverable/            output; a new folder per run, never overwrites context
-notes/                  the agent's metacognition; it maintains these itself
-task.md                 what to do
-launch.sh               press go
-CLAUDE.md               the agent's operating manual
-.claude/                settings, including tool permissions
-```
-
-## Setup
+## Quickstart
 
 ```bash
+git clone https://github.com/lambdaf-org/the-factory
+cd the-factory
 npm install -g @anthropic-ai/claude-code
 chmod +x launch.sh
-```
-
-## Run
-
-```bash
 ./launch.sh          # interactive
-./launch.sh --auto   # headless, fire and forget
+./launch.sh --auto   # headless, unattended
 ```
 
-## How a run works
+The launcher checks that the `claude` CLI is installed and that `task.md` exists, then creates `deliverable/drafts` and `notes` if they are missing. The interactive mode opens a normal `claude` session. The `--auto` mode runs `claude -p` headless with `--max-turns 50` and an explicit `--allowedTools` allow-list, so an unattended run only touches the tools listed in `launch.sh`.
+
+## Features
+
+The agent loop is notes-first. The agent maintains `notes/map.md` (master index), `notes/state.md` (status and flagged inconsistencies), `notes/connections.md` (how things relate), and `notes/author-voice.md` (how the source author writes). Building these comes before any output when they are sparse or missing.
+
+The layout is fixed and readable. `context/` holds source, `hints/` holds the rules, `task.md` holds the job, `deliverable/` holds output, and `notes/` holds the agent's working memory.
+
+Continuation works by convention. A `most_recent_docs/` subfolder inside any context topic marks the live working state to build on. Everything else is treated as reference.
+
+There are two run modes. One is interactive `claude`. The other is headless `claude -p` with a scoped tool allow-list for unattended work.
+
+The operating manual is editable. `CLAUDE.md` defines how the agent thinks about the process, and `hints/style.md` sets the writing rules it always follows.
+
+Office and binary files are handled explicitly. `CLAUDE.md` instructs the agent to read `.docx`, `.pdf`, and spreadsheets through `pandoc` or `python-docx`, and to back up originals before editing.
+
+The project is MIT licensed.
+
+## How it works
+
+Each run follows the sequence in `CLAUDE.md`:
 
 1. Read `hints/`.
-2. Check `notes/`. If they're sparse or missing, building them is the task before anything else.
+2. Check `notes/`. If they are sparse or missing, building them is the task before anything else.
 3. Read everything in `context/`, building or updating notes while reading.
 4. Read `task.md`.
 5. Read anything already in `deliverable/` for prior output state.
@@ -49,13 +51,18 @@ chmod +x launch.sh
 8. Execute step by step, cross-checking against the source.
 9. Assemble the final output.
 10. Review it end to end.
-11. Make a final pass on `notes/`, updating anything that changed during the run.
+11. Make a final pass on `notes/`, updating anything that changed.
 
-## Using it on your own work
+To apply it to other work, source is organized as `context/topic-name/` with whatever subfolders fit, the goal is written in `task.md`, `hints/` is tuned if needed, and then the launcher runs. Output lands in a new folder under `deliverable/` and the context is left untouched. The `hints/feedback.md` file is the channel for human review notes between runs. The agent reads it before starting and applies what it finds.
 
-Drop your source material into `context/`, organized as `context/topic-name/` with whatever subfolders make sense. If you're continuing earlier work, put the current state in a `most_recent_docs/` folder and the agent will pick up from there. Write what you want done in `task.md`. Tune `hints/` if you need to. Then run. Output appears in a new folder under `deliverable/`, and your context is left untouched.
+### Permissions
 
-## Customizing
+Interactive runs draw their tool permissions from `.claude/settings.local.json`. Headless `--auto` runs draw theirs from the `--allowedTools` flag passed to `claude -p` in `launch.sh`. Either allow-list can be edited to change what a run may do without prompting.
 
-`hints/` is yours to edit. `style.md` matters most — it sets language, register, and the writing rules the agent always follows. `CLAUDE.md` is the agent's operating manual; change it to change how the agent thinks about the whole process. Permissions for an `--auto` run come from the `--allowedTools` flag that `launch.sh` passes to its headless `claude -p` call; edit that flag to change what an unattended run may do without prompting. The `.claude/settings.json` file holds the tool permissions for interactive runs; edit its allow-list to taste.
+## Contributing
 
+See [lambdaf-org/contributing](https://github.com/lambdaf-org/contributing).
+
+## License
+
+MIT. See the `LICENSE` file. Copyright (c) 2026 The Factory contributors.
